@@ -1,24 +1,21 @@
-const express = require("express");
-const fs = require("fs");
-const cors = require("cors");
+const jsonServer = require('json-server');
+const cors = require('cors');
+const path = require('path');
 
-const app = express();
-app.use(cors());
-app.use(express.json());
+const server = jsonServer.create();
+const router = jsonServer.router(path.join(__dirname, 'db.json'));
+const middlewares = jsonServer.defaults();
 
-const DB = "./db.json";
+// Enable CORS with specific options if needed, or default to all
+server.use(cors());
+server.use(jsonServer.bodyParser);
+server.use(middlewares);
 
-app.get("/data", (req, res) => {
-  const data = JSON.parse(fs.readFileSync(DB, "utf-8"));
-  res.json(data);
+// Custom routes or middleware can be added here if needed
+
+server.use(router);
+
+const port = process.env.PORT || 3000;
+server.listen(port, () => {
+  console.log(`JSON Server is running on port ${port}`);
 });
-
-app.post("/data", (req, res) => {
-  const data = JSON.parse(fs.readFileSync(DB, "utf-8"));
-  data.push(req.body);
-  fs.writeFileSync(DB, JSON.stringify(data, null, 2));
-  res.json({ success: true });
-});
-
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log("running"));
